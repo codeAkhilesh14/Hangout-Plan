@@ -2,72 +2,77 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Heart } from 'lucide-react';
 
 const AmbientSoundPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [interactionTriggered, setInteractionTriggered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef(null);
+  const hasStartedRef = useRef(false);
 
+  // Single unified effect: create audio, try autoplay, attach interaction listeners
   useEffect(() => {
-    // Load romantic song
     const audio = new Audio('/sounds/romantic.mp3');
     audio.loop = true;
-    audio.volume = 0.45; // pleasant background volume
+    audio.volume = 0.45;
     audioRef.current = audio;
 
-    // Check if the user previously paused it
-    const wasPlaying = localStorage.getItem('hangout_romantic_playing') !== 'false';
-
-    const startAudioOnInteraction = async () => {
-      if (interactionTriggered) return;
+    const tryPlay = async () => {
+      if (hasStartedRef.current) return;
       try {
-        if (wasPlaying && audioRef.current) {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        }
+        await audio.play();
+        hasStartedRef.current = true;
+        setIsPlaying(true);
+        removeListeners();
       } catch (err) {
-        console.log('Autoplay deferred until active user interaction:', err);
-      } finally {
-        setInteractionTriggered(true);
-        window.removeEventListener('click', startAudioOnInteraction);
-        window.removeEventListener('keydown', startAudioOnInteraction);
+        // Browser blocked autoplay — listeners will handle it
       }
     };
 
-    // Try to autoplay immediately
-    if (wasPlaying) {
-      audio.play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {
-          // If blocked, wait for user interaction
-          window.addEventListener('click', startAudioOnInteraction);
-          window.addEventListener('keydown', startAudioOnInteraction);
-        });
-    }
+    const onInteraction = () => {
+      if (!hasStartedRef.current) {
+        tryPlay();
+      }
+    };
+
+    const events = ['click', 'keydown', 'touchstart', 'mousedown', 'pointerdown', 'scroll'];
+
+    const addListeners = () => {
+      events.forEach(evt => {
+        window.addEventListener(evt, onInteraction, { passive: true, once: false });
+      });
+    };
+
+    const removeListeners = () => {
+      events.forEach(evt => {
+        window.removeEventListener(evt, onInteraction);
+      });
+    };
+
+    // Attempt immediate autoplay
+    tryPlay().then(() => {
+      if (!hasStartedRef.current) {
+        // Autoplay was blocked, wait for any interaction
+        addListeners();
+      }
+    });
 
     return () => {
       audio.pause();
-      window.removeEventListener('click', startAudioOnInteraction);
-      window.removeEventListener('keydown', startAudioOnInteraction);
+      audio.src = '';
+      removeListeners();
     };
-  }, []);
+  }, []); // runs once on mount
 
-  // Sync play/pause state
-  useEffect(() => {
+  // Handle manual toggle via heart button
+  const togglePlay = () => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      audioRef.current.play().catch(err => {
-        console.log('Audio playback blocked:', err);
-        setIsPlaying(false);
-      });
-      localStorage.setItem('hangout_romantic_playing', 'true');
-    } else {
       audioRef.current.pause();
-      localStorage.setItem('hangout_romantic_playing', 'false');
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().then(() => {
+        hasStartedRef.current = true;
+        setIsPlaying(true);
+      }).catch(() => {});
     }
-  }, [isPlaying]);
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
   };
 
   return (
