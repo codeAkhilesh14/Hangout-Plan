@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import StarfieldBackground from './components/StarfieldBackground';
+import AmbientSoundPlayer from './components/AmbientSoundPlayer';
 import LandingPage from './pages/LandingPage';
 import ChooseDayPage from './pages/ChooseDayPage';
 import ChoosePlacePage from './pages/ChoosePlacePage';
@@ -108,15 +109,18 @@ function App() {
       <StarfieldBackground />
       
       {/* Upper Navigation Header */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-10 relative select-none pointer-events-none">
+      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20 relative select-none">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-neon-gradient flex items-center justify-center font-bold text-sm text-white shadow-[0_0_10px_rgba(255,95,162,0.4)]">
             H
           </div>
           <span className="font-extrabold text-sm tracking-widest text-gray-300">HANGOUT</span>
         </div>
-        <div className="text-[10px] font-mono tracking-wider text-gray-500 uppercase">
-          Status: Online 🟢
+        <div className="flex items-center gap-4">
+          <AmbientSoundPlayer />
+          <div className="hidden sm:block text-[10px] font-mono tracking-wider text-gray-500 uppercase">
+            Status: Online 🟢
+          </div>
         </div>
       </header>
 
