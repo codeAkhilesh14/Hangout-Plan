@@ -25,7 +25,7 @@ const SummaryPage = () => {
         // Local mockup fallback if API/DB is unreachable
         setSession({
           day: 'Saturday',
-          place: 'Watch Cocktail 2 movie',
+          place: 'Watch Alpha movie',
           timeSlot: '6pm – 9pm',
           dodgeCount: 5
         });

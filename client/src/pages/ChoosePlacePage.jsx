@@ -9,7 +9,7 @@ const places = [
 
   {
     id: 'movie',
-    name: 'Watch Cocktail 2 movie',
+    name: 'Watch Alpha movie',
     description: 'Popcorn & Vibes 🍿',
     icon: Film,
     color: 'pink',
